@@ -259,7 +259,7 @@ class CsrfViewMiddleware(MiddlewareMixin):
                     if settings.CSRF_USE_SESSIONS
                     else settings.CSRF_COOKIE_DOMAIN
                 )
-                print('good_referer == {good_referer}')
+                good_referer__before_if_else = good_referer[::]
                 if good_referer is not None:
                     server_port = request.get_port()
                     if server_port not in ('443', '80'):
@@ -273,13 +273,13 @@ class CsrfViewMiddleware(MiddlewareMixin):
 
                 # Create a list of all acceptable HTTP referers, including the
                 # current host if it's permitted by ALLOWED_HOSTS.
-                good_hosts = list(settings.CSRF_TRUSTED_ORIGINS)
-                print(f'(before if) good_hosts == {good_hosts}')
+                good_hosts = list(settings.CSRF_TRUSTED_ORIGINS)                
+                good_hosts__before_if = good_hosts.copy()
                 if good_referer is not None:
                     good_hosts.append(good_referer)
                 
-                print(f'(after if) good_hosts == {good_hosts}')
-                if not any(is_same_domain(referer.netloc, host) for host in good_hosts):
+                referer__netloc = referer.netloc
+                if not any(is_same_domain(referer__netloc, host) for host in good_hosts):
                     raise RuntimeError('for sentry.io')
                     reason = REASON_BAD_REFERER % referer.geturl()
                     return self._reject(request, reason)
