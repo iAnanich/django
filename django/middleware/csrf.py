@@ -236,10 +236,12 @@ class CsrfViewMiddleware(MiddlewareMixin):
                 # same-domain requests in only about 0.2% of cases or less, so
                 # we can use strict Referer checking.
                 referer = request.META.get('HTTP_REFERER')
+                print('(before urlparse) referer == {referer}')
                 if referer is None:
                     return self._reject(request, REASON_NO_REFERER)
 
-                referer = urlparse(referer)
+                referer = urlparse(referer)                
+                print('(after urlparse) referer == {referer}')
 
                 # Make sure we have a valid URL for Referer.
                 if '' in (referer.scheme, referer.netloc):
@@ -257,6 +259,7 @@ class CsrfViewMiddleware(MiddlewareMixin):
                     if settings.CSRF_USE_SESSIONS
                     else settings.CSRF_COOKIE_DOMAIN
                 )
+                print('good_referer == {good_referer}')
                 if good_referer is not None:
                     server_port = request.get_port()
                     if server_port not in ('443', '80'):
@@ -271,10 +274,13 @@ class CsrfViewMiddleware(MiddlewareMixin):
                 # Create a list of all acceptable HTTP referers, including the
                 # current host if it's permitted by ALLOWED_HOSTS.
                 good_hosts = list(settings.CSRF_TRUSTED_ORIGINS)
+                print(f'(before if) good_hosts == {good_hosts}')
                 if good_referer is not None:
                     good_hosts.append(good_referer)
-
+                
+                print(f'(after if) good_hosts == {good_hosts}')
                 if not any(is_same_domain(referer.netloc, host) for host in good_hosts):
+                    raise RuntimeError('for sentry.io')
                     reason = REASON_BAD_REFERER % referer.geturl()
                     return self._reject(request, reason)
 
